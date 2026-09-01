@@ -1,0 +1,29 @@
+# gin-vue-admin 本地编排：后端（SQLite）+ 前端（nginx）
+# 网络：compose 自动创建用户自定义网络，内置 DNS，
+#       nginx 用服务名 server 直接访问后端（无需端口映射到宿主）
+services:
+  server:
+    image: gva-server:v2            # 先 docker build，compose 只负责编排
+    container_name: gva
+    restart: unless-stopped
+    volumes:
+      - ./server/config.docker.yaml:/app/config/config.yaml:ro  # 配置注入，只读
+      - ./server/data:/app/data     # 数据持久化（SQLite 数据库文件）
+      - ./server/log:/app/log       # 日志外置
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "--post-data={}", "http://127.0.0.1:8888/base/captcha"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    image: gva-web:v2
+    container_name: gva-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "8080:80"
