@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-`Go 1.24 (Gin)` · `Vue3 + Vite` · `Docker / docker-compose` · `Nginx` · `minikube` · `GitHub Actions` · `阿里云 ACR` · `ArgoCD` · `Prometheus`
+`Go 1.24 (Gin)` · `Vue3 + Vite` · `Docker / docker-compose` · `Nginx` · `k3s` · `GitHub Actions` · `阿里云 ACR` · `ArgoCD` · `Prometheus`
 
 ## 已完成
 
@@ -30,7 +30,7 @@
 
 ## 进行中
 
-- minikube 集群部署（K8s manifests）
+- k3s 集群部署（K8s manifests）
 - GitHub Actions 流水线：构建镜像推送 ACR → 回写 GitOps 仓库 → ArgoCD 自动同步
 - Prometheus + AlertManager 监控告警链路
 
