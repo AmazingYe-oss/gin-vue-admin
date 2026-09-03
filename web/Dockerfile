@@ -5,13 +5,13 @@ FROM docker.m.daocloud.io/node:20.19.0-alpine AS builder
 WORKDIR /app
 
 # 【关键】设置 npm 使用国内镜像源，解决国内构建超时问题
-ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com/
+# ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com/
 
 # 先复制依赖清单，利用 Docker 缓存机制（只要依赖没变，就不会重新下载）
 COPY package.json package-lock.json* ./
 
 # 使用 npm ci 进行确定性安装，速度更快且更稳定
-RUN npm ci --replace-registry-host=npmjs
+RUN npm install
 
 
 # 复制全部源码
