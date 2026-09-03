@@ -42,6 +42,7 @@ jobs:
               context: ./server
               file: ./server/Dockerfile
               push: true
+              provenance: false
               tags: |
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-server:${{ steps.meta.outputs.tag }} 
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-server:latest   
@@ -74,6 +75,7 @@ jobs:
               context: ./web
               file: ./web/Dockerfile
               push: true
+              provenance: false
               tags: |
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:${{ steps.meta.outputs.tag }} 
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:latest   
