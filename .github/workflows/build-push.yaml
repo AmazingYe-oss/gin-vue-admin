@@ -1,0 +1,81 @@
+name: Build and Push Images to ACR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - 'web/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: crpi-he7mqvhihpnvi08o.cn-shanghai.personal.cr.aliyuncs.com
+  NAMESPACE: gin-vue-admin1
+
+jobs:
+    build-server:
+        name: Build and Push Server
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v3
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v2
+
+          - name: Log in to ACR
+            uses: docker/login-action@v3
+            with:
+              registry: ${{ env.REGISTRY }}
+              username: ${{ secrets.ACR_USERNAME }}
+              password: ${{ secrets.ACR_PASSWORD }} 
+          - name: Generate Short SHA Tag
+            id: meta
+            run: |
+              SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+              echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          - name: Build and Push Server Image
+            uses: docker/build-push-action@v5
+            with:
+              context: ./server
+              file: ./server/Dockerfile
+              push: true
+              tags: |
+                ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-server:${{ steps.meta.outputs.tag }} 
+                ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-server:latest   
+              cache-from: type=gha
+              cache-to: type=gha,mode=max
+    build-web:
+        name: Build and Push Web
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v3
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v2
+
+          - name: Log in to ACR
+            uses: docker/login-action@v3
+            with:
+              registry: ${{ env.REGISTRY }}
+              username: ${{ secrets.ACR_USERNAME }}
+              password: ${{ secrets.ACR_PASSWORD }} 
+          - name: Generate Short SHA Tag
+            id: meta
+            run: |
+              SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+              echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          - name: Build and Push Web Image
+            uses: docker/build-push-action@v5
+            with:
+              context: ./web
+              file: ./web/Dockerfile
+              push: true
+              tags: |
+                ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:${{ steps.meta.outputs.tag }} 
+                ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:latest   
+              cache-from: type=gha
+              cache-to: type=gha,mode=max            
