@@ -48,6 +48,7 @@ jobs:
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-server:latest   
               cache-from: type=gha
               cache-to: type=gha,mode=max
+          
     build-web:
         name: Build and Push Web
         runs-on: ubuntu-latest
@@ -80,4 +81,33 @@ jobs:
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:${{ steps.meta.outputs.tag }} 
                 ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/gva-web:latest   
               cache-from: type=gha
-              cache-to: type=gha,mode=max            
+              cache-to: type=gha,mode=max 
+      
+    update-gitops:
+          name: Update Gitops Repository
+          runs-on: ubuntu-latest
+          needs: [build-server,build-web]
+          steps:
+            - name: Checkout Gitops Repository
+              uses: actions/checkout@v3
+              with: 
+                repository: AmazingYe-oss/gin-vue-admin-gitops
+                token: ${{secrets.GITHUB_TOKEN}}
+                ref: main
+            - name: Update Image Tags in Helm values.yaml
+              run: |
+                SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
+                echo "updating image tags to: $SHORT_TAG"
+                sed -i "s|gva-server:.*|gva-server:$SHORT_TAG|g" helm/gva/values.yaml
+                sed -i "s|gva-web:.*|gva-web:$SHORT_TAG|g" helm/gva/values.yaml
+                git diff helm/gva/values.yaml
+            
+            - name: Commit and Push to Gitops repo
+              run: |
+                git config user.name "github-actions[bot]"
+                git config user.email "github-actions[bot]@users.noreply.github.com"
+                SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+                git add helm/gva/values.yaml
+                git commit -m "Update image tags to $SHORT_SHA"
+                git push
+
