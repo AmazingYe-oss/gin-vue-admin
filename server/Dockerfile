@@ -34,3 +34,4 @@ EXPOSE 8888
 
 ENTRYPOINT ["tini", "--", "/app/gva-server"]
 CMD ["-c", "/app/config/config.yaml"]
+# trigger CI Tue Sep  8 00:01:48     2026
