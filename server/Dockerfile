@@ -41,3 +41,4 @@ EXPOSE 8888
 
 ENTRYPOINT ["tini", "--", "/app/gva-server"]
 CMD ["-c", "/app/config/config.yaml"] 
+# retry CI
