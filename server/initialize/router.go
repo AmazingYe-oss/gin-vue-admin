@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/docs"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/middleware"
@@ -42,6 +44,7 @@ func Routers() *gin.Engine {
 	Router.Use(middleware.GinRecovery(true))
 	// 全局访问日志 + 唯一 body/resp 捕获点（供 OperationRecord 复用）
 	Router.Use(middleware.AccessLog())
+	Router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	if gin.Mode() == gin.DebugMode {
 		Router.Use(gin.Logger())
 	}
