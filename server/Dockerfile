@@ -4,6 +4,7 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /app
 
 ENV GOPROXY=https://goproxy.cn,direct
+ENV GOTOOLCHAIN=local
 
 # 先复制依赖文件，利用 Docker 缓存层
 COPY go.mod go.sum ./
