@@ -69,23 +69,6 @@
 
 ---
 
-## 🎯 核心面试高频深挖与自查速查
-
-| 考察维度 | 面试官核心追问 | 你的标准答案与实战证据 |
-|---|---|---|
-| **1. 架构定位** | 为什么设计双仓库而不是单仓库？ | **应用仓**关注源码构建与单元测试；**GitOps 仓**声明集群期望状态并作为唯一事实源。隔离 CI 与 CD 权限，避免构建权限直接污染集群生产配置。 |
-| **2. 镜像瘦身** | 怎么把后端镜像压到 57.7MB（-65%）的？ | 多阶段构建（`golang:1.24-alpine` 编译 + `alpine:3.20` 运行）；`CGO_ENABLED=0` 静态编译并加 `-ldflags="-s -w"` 剔除调试符号；`.dockerignore` 排除无用资源。 |
-| **3. 权限与存储** | SQLite 挂载 PVC 报 `permission denied` 怎么解？ | 镜像非 root 运行（`uid=1000`），但 K8s 默认挂载卷属主为 root。在 Pod `securityContext` 注入 `fsGroup: 1000`，使挂载点目录属组归属当前容器用户。 |
-| **4. 平滑接管** | 存量手写资源怎么切到 Helm 管理且零中断？ | 利用 Helm **Resource Adoption** 机制：在存量资源（Service/Deployment）打上 `app.kubernetes.io/managed-by: Helm` 及 Release 元数据注解，执行 `helm install` 直接接管。 |
-| **5. 路由与代理** | Nginx 反代为什么用 `^~ /api/`？尾斜杠有什么坑？ | `^~` 提高前缀匹配优先级，防止被后续通用正则匹配截胡；`proxy_pass http://server:8888/` 结尾带斜杠会自动剥离 `/api/` 前缀，对齐后端原生路由。 |
-| **6. GitOps 防漂移** | 有人在集群里手动改副本数会发生什么？ | ArgoCD 开启了 **Self-Heal** 机制，检测到集群实时状态与 Git 期望状态不一致时，3 分钟内自动触发同步，覆盖手动修改，强制回滚。 |
-| **7. 监控发现** | ServiceMonitor 是怎么把目标注册进 Prometheus 的？ | ServiceMonitor 通过 `matchLabels: app=gva-server` 匹配对应的 Service，Prometheus Operator 监听该 CR 并自动在 Prometheus 生成 `job="server"` 抓取任务。 |
-| **8. 告警盲区** | 为什么用了 `up == 0` 还要加 `absent()` 规则？ | 当 Pod 被彻底删除或副本缩容为 0 时，时序数据不复存在，`up == 0` 不会触发（因为没有数据可比）。必须补充 `absent(up{job="server"}) == 1` 覆盖时序消失场景。 |
-| **9. 告警丢失** | `absent()` 产生的告警收不到通知，排查路径是什么？ | `absent()` 执行后会剥离原指标标签，导致匹配不到子路由匹配器被抛弃。修复方案是在 PrometheusRule 的 `labels` 中显式补齐 `namespace: gva`。 |
-| **10. 故障演练** | 整个告警闭环是如何验证的？ | Git 提交 `replicas: 0` 模拟故障 → Prometheus 出现 Pending 并在 1 分钟后转为 Firing → Alertmanager 路由至 Webhook 收到 Firing POST → 改回 `replicas: 1` 恢复后收到 Resolved POST。 |
-
----
-
 ## 🔗 相关仓库与交付清单
 
 - **应用源码仓库**：[AmazingYe-oss/gin-vue-admin](https://github.com/AmazingYe-oss/gin-vue-admin)
